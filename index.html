@@ -104,7 +104,7 @@
     <script>
         // Função para carregar categorias dinamicamente de um endpoint
         function carregarCategorias() {
-            fetch('https://seu-endpoint-categorias.com') // Substitua pelo seu endpoint real
+            fetch('http://n8n.stacasa.local/webhook-test/fe31eec5-9a3a-4bea-a4be-87686a4cc720') // Substitua pelo seu endpoint real
                 .then(response => response.json())
                 .then(data => {
                     const categoriaSelect = document.getElementById('categoria');
