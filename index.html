@@ -59,7 +59,7 @@
         }
 
         /* Responsividade */
-        @media (max-width: 500px) {
+        @media (max-width: 600px) {
             .container {
                 padding: 10px;
             }
@@ -75,7 +75,7 @@
     <div class="container">
         <h1>Abertura de Chamado</h1>
         <form id="chamadoForm">
-            <label for="nome">Requerente:</label>
+            <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
 
             <label for="email">E-mail:</label>
@@ -97,53 +97,58 @@
             <label for="descricao">Descrição do Chamado:</label>
             <textarea id="descricao" name="descricao" rows="5" required></textarea>
 
-            <button type="submit">Abrir Chamado</button>
+            <button type="submit">Enviar Chamado</button>
         </form>
     </div>
 
     <script>
-        // Função para carregar categorias dinamicamente ao selecionar um departamento
-        function carregarCategorias() {
-            const departamento = document.getElementById('departamento').value;
+        // Função para buscar as categorias
+        function fetchCategorias(departamento) {
+            fetch('https://n8n.stacasa.local/test/9754d18', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ departamento: departamento })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const categoriaSelect = document.getElementById('categoria');
+                categoriaSelect.innerHTML = ''; // Limpar opções antigas
 
-            if (departamento) {
-                fetch(`https://n8n.stacasa.local/test/9754d18?departamento=${departamento}`, {
-                    method: 'GET', // Especificando explicitamente o método GET
-                })
-                .then(response => response.json())
-                .then(data => {
-                    const categoriaSelect = document.getElementById('categoria');
-                    categoriaSelect.innerHTML = ''; // Limpa as opções existentes
-
-                    // Adiciona uma opção padrão
-                    const opcaoPadrao = document.createElement('option');
-                    opcaoPadrao.value = '';
-                    opcaoPadrao.text = 'Selecione uma categoria';
-                    categoriaSelect.appendChild(opcaoPadrao);
-
-                    // Popula o select com as categorias retornadas
+                if (data.categorias && data.categorias.length > 0) {
                     data.categorias.forEach(categoria => {
-                        const opcao = document.createElement('option');
-                        opcao.value = categoria.id; // Presume-se que o ID seja retornado no JSON
-                        opcao.text = categoria.nome; // Presume-se que o nome da categoria seja retornado no JSON
-                        categoriaSelect.appendChild(opcao);
+                        const option = document.createElement('option');
+                        option.value = categoria;
+                        option.textContent = categoria;
+                        categoriaSelect.appendChild(option);
                     });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar categorias:', error);
-                    const categoriaSelect = document.getElementById('categoria');
-                    categoriaSelect.innerHTML = '<option value="">Erro ao carregar categorias</option>';
-                });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Nenhuma categoria disponível';
+                    categoriaSelect.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao carregar categorias. Tente novamente.');
+            });
+        }
+
+        // Adicionar evento de mudança no campo de departamento
+        document.getElementById('departamento').addEventListener('change', function() {
+            const departamentoSelecionado = this.value;
+
+            if (departamentoSelecionado) {
+                fetchCategorias(departamentoSelecionado);
             } else {
                 const categoriaSelect = document.getElementById('categoria');
                 categoriaSelect.innerHTML = '<option value="">Selecione um departamento primeiro</option>';
             }
-        }
+        });
 
-        // Dispara a função ao selecionar um departamento
-        document.getElementById('departamento').addEventListener('change', carregarCategorias);
-
-        // Função de envio do formulário
+        // Envio do formulário
         document.getElementById('chamadoForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -155,7 +160,7 @@
                 descricao: document.getElementById('descricao').value
             };
 
-            fetch('https://seu-webhook-url.com', { // Substitua pela URL do seu webhook
+            fetch('https://seu-webhook-url.com', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -166,6 +171,7 @@
                 if (response.ok) {
                     alert('Chamado enviado com sucesso!');
                     document.getElementById('chamadoForm').reset();
+                    document.getElementById('categoria').innerHTML = '<option value="">Selecione um departamento primeiro</option>'; // Resetar categorias
                 } else {
                     alert('Ocorreu um erro ao enviar o chamado. Tente novamente.');
                 }
