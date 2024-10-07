@@ -107,7 +107,7 @@
             const departamento = document.getElementById('departamento').value;
 
             if (departamento) {
-                fetch(`http://n8n.stacasa.local/test/9754d18?departamento=${departamento}`, {
+                fetch(`https://n8n.stacasa.local/test/9754d18?departamento=${departamento}`, {
                     method: 'GET', // Especificando explicitamente o método GET
                 })
                 .then(response => response.json())
