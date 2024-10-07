@@ -91,7 +91,7 @@
 
             <label for="categoria">Categoria:</label>
             <select id="categoria" name="categoria" required>
-                <option value="">Carregando categorias...</option>
+                <option value="">Selecione um departamento primeiro</option>
             </select>
 
             <label for="descricao">Descrição do Chamado:</label>
@@ -102,37 +102,44 @@
     </div>
 
     <script>
-        // Função para carregar categorias dinamicamente de um endpoint
+        // Função para carregar categorias dinamicamente ao selecionar um departamento
         function carregarCategorias() {
-            fetch('http://n8n.stacasa.local/test/9754d18') // Substitua pelo seu endpoint real
-                .then(response => response.json())
-                .then(data => {
-                    const categoriaSelect = document.getElementById('categoria');
-                    categoriaSelect.innerHTML = ''; // Limpa as opções existentes
+            const departamento = document.getElementById('departamento').value;
 
-                    // Adiciona uma opção padrão
-                    const opcaoPadrao = document.createElement('option');
-                    opcaoPadrao.value = '';
-                    opcaoPadrao.text = 'Selecione uma categoria';
-                    categoriaSelect.appendChild(opcaoPadrao);
+            if (departamento) {
+                fetch(`http://n8n.stacasa.local/test/9754d18?departamento=${departamento}`) // Endpoint ajustado para incluir o departamento como parâmetro
+                    .then(response => response.json())
+                    .then(data => {
+                        const categoriaSelect = document.getElementById('categoria');
+                        categoriaSelect.innerHTML = ''; // Limpa as opções existentes
 
-                    // Popula o select com as categorias retornadas
-                    data.categorias.forEach(categoria => {
-                        const opcao = document.createElement('option');
-                        opcao.value = categoria.id; // Presume-se que o ID seja retornado no JSON
-                        opcao.text = categoria.nome; // Presume-se que o nome da categoria seja retornado no JSON
-                        categoriaSelect.appendChild(opcao);
+                        // Adiciona uma opção padrão
+                        const opcaoPadrao = document.createElement('option');
+                        opcaoPadrao.value = '';
+                        opcaoPadrao.text = 'Selecione uma categoria';
+                        categoriaSelect.appendChild(opcaoPadrao);
+
+                        // Popula o select com as categorias retornadas
+                        data.categorias.forEach(categoria => {
+                            const opcao = document.createElement('option');
+                            opcao.value = categoria.id; // Presume-se que o ID seja retornado no JSON
+                            opcao.text = categoria.nome; // Presume-se que o nome da categoria seja retornado no JSON
+                            categoriaSelect.appendChild(opcao);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar categorias:', error);
+                        const categoriaSelect = document.getElementById('categoria');
+                        categoriaSelect.innerHTML = '<option value="">Erro ao carregar categorias</option>';
                     });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar categorias:', error);
-                    const categoriaSelect = document.getElementById('categoria');
-                    categoriaSelect.innerHTML = '<option value="">Erro ao carregar categorias</option>';
-                });
+            } else {
+                const categoriaSelect = document.getElementById('categoria');
+                categoriaSelect.innerHTML = '<option value="">Selecione um departamento primeiro</option>';
+            }
         }
 
-        // Chama a função para carregar categorias quando a página é carregada
-        window.addEventListener('DOMContentLoaded', carregarCategorias);
+        // Dispara a função ao selecionar um departamento
+        document.getElementById('departamento').addEventListener('change', carregarCategorias);
 
         // Função de envio do formulário
         document.getElementById('chamadoForm').addEventListener('submit', function(event) {
